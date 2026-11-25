@@ -114,7 +114,7 @@ Up to 100 numbers, separated by new lines or commas. Keep numbers out of public 
 
 ## Links
 
-[curl-sms.com](https://curl-sms.com) · [Docs](https://curl-sms.com/docs) · [API reference](https://curl-sms.com/docs/api) · [Pricing](https://curl-sms.com/pricing) · [More examples](https://github.com/curl-sms/curl-sms)
+[curl-sms.com](https://curl-sms.com) · [Action docs](https://curl-sms.com/docs/github-action) · [All integrations](https://curl-sms.com/integrations) · [API reference](https://curl-sms.com/docs/api) · [Pricing](https://curl-sms.com/pricing) · [More examples](https://github.com/curl-sms/curl-sms)
 
 ## License
 
