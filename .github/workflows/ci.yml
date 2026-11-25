@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Unit tests (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm run lint
+      - run: npm test
+
+  e2e:
+    name: End-to-end (${{ matrix.os }}, mock API)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Start mock API
+        shell: bash
+        run: |
+          node test/mock-server.js &
+          for _ in $(seq 1 20); do curl -s -o /dev/null http://127.0.0.1:8787 && break; sleep 0.5; done
+      - name: Send SMS
+        id: sms
+        uses: ./
+        with:
+          api-key: cs_test_example
+          receiver: "+4915123456789"
+          body: "Hello from ${{ github.repository }} 👋"
+          base-url: http://127.0.0.1:8787
+      - name: Check outputs
+        shell: bash
+        env:
+          ID: ${{ steps.sms.outputs.id }}
+          STATUS: ${{ steps.sms.outputs.status }}
+          MODE: ${{ steps.sms.outputs.mode }}
+        run: |
+          test -n "$ID"
+          test "$STATUS" = queued
+          test "$MODE" = test
+      - name: Rejected SMS only warns with fail-on-error false
+        uses: ./
+        with:
+          api-key: cs_test_example
+          receiver: "+4915100000422"
+          body: "Should be rejected"
+          base-url: http://127.0.0.1:8787
+          fail-on-error: "false"
+
+  live:
+    name: Live API (test key)
+    runs-on: ubuntu-latest
+    needs: test
+    # Runs only where the CURLSMS_TEST_KEY secret exists. Test keys never send a real SMS.
+    env:
+      HAS_KEY: ${{ secrets.CURLSMS_TEST_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.HAS_KEY == 'true'
+      - id: sms
+        if: env.HAS_KEY == 'true'
+        uses: ./
+        with:
+          api-key: ${{ secrets.CURLSMS_TEST_KEY }}
+          receiver: "+4915123456789"
+          body: "send-sms CI run ${{ github.run_id }}"
+      - if: env.HAS_KEY == 'true'
+        env:
+          MODE: ${{ steps.sms.outputs.mode }}
+        run: test "$MODE" = test

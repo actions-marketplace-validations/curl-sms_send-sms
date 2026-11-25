@@ -1,0 +1,14 @@
+{
+  "name": "send-sms-action",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GitHub Action: send an SMS with curl-sms",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "lint": "node --check index.js && node --check lib.js && node --check test/mock-server.js"
+  }
+}

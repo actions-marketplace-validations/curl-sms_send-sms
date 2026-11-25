@@ -1,0 +1,54 @@
+name: Send SMS with curl-sms
+description: Send an SMS from your GitHub workflow, e.g. when a deploy fails or a release ships. One step, no setup.
+author: curl-sms
+
+branding:
+  icon: message-square
+  color: gray-dark
+
+inputs:
+  api-key:
+    description: curl-sms API key (cs_live_… or cs_test_…). Store it as a secret.
+    required: true
+  receiver:
+    description: Mobile number in international format, e.g. +4915123456789. Several numbers (up to 100) separated by commas or new lines.
+    required: true
+  body:
+    description: Text of the SMS (UTF-8). 160 characters per part, 70 with emoji, at most 10 parts.
+    required: true
+  send-at:
+    description: Optional RFC 3339 time to send later, e.g. 2026-12-24T09:00:00+01:00.
+    required: false
+  idempotency-key:
+    description: Optional. Same key and same request within 24 h never sends twice. Defaults to a key derived from the run, attempt, job and message, so re-running a step is safe.
+    required: false
+  fail-on-error:
+    description: Fail the step if the SMS is rejected. Set to false to only log a warning.
+    required: false
+    default: "true"
+  language:
+    description: Language of error messages (en or de).
+    required: false
+    default: en
+  base-url:
+    description: API base URL. Only change this for testing.
+    required: false
+    default: https://curl-sms.com
+
+outputs:
+  id:
+    description: ID of the SMS (first SMS when sending to several receivers).
+  ids:
+    description: JSON array of all SMS IDs.
+  status:
+    description: Status after sending (queued or scheduled).
+  mode:
+    description: live or test.
+  segments:
+    description: Number of SMS parts per receiver.
+  price:
+    description: Price in euros taken from the balance (first SMS).
+
+runs:
+  using: node24
+  main: index.js
