@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test \"test/*.test.js\"",
+    "test": "node --test test/action.test.js",
     "lint": "node --check index.js && node --check lib.js && node --check test/mock-server.js"
   }
 }
